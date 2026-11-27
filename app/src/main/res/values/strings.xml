@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Morg</string>
+
+    <string name="section_service">Service</string>
+    <string name="service_enabled">Edge handle</string>
+    <string name="service_enabled_desc">Show the handle while an app is in the foreground</string>
+    <string name="section_mode">Open as</string>
+    <string name="mode_fullscreen">Fullscreen</string>
+    <string name="mode_fullscreen_desc">A new fullscreen task</string>
+    <string name="mode_window">Window</string>
+    <string name="mode_window_desc">A floating window you can see at the same time</string>
+    <string name="section_position">Position</string>
+    <string name="position_editing">Adjust position</string>
+    <string name="position_editing_desc">Drag the handle, release to snap to the nearest edge</string>
+    <string name="current_edge">Current edge: %1$s</string>
+    <string name="edge_left">left</string>
+    <string name="edge_right">right</string>
+
+    <string name="grant_overlay">Grant “Display over other apps”</string>
+    <string name="grant_usage_access">Grant usage access (to detect the foreground app)</string>
+    <string name="window_freeform_only">This device has no native window mode; falling back to AOSP freeform, which looks different.</string>
+    <string name="window_unavailable">Window mode needs freeform windows. Enable “Force activities to be resizable” or “Enable freeform windows” in Developer options.</string>
+    <string name="open_developer_options">Open Developer options</string>
+
+    <string name="footer_hint">Swipe the edge handle to open another instance of the app you are in.</string>
+
+    <!-- Build info (tap the ASCII logo 7 times) -->
+    <string name="build_info_title">Build info</string>
+    <string name="build_section_app">App</string>
+    <string name="build_section_build">Build</string>
+    <string name="build_section_device">Device</string>
+    <string name="build_version">Version</string>
+    <string name="build_package">Package</string>
+    <string name="build_type">Variant</string>
+    <string name="build_git">Git</string>
+    <string name="build_stamp">Built</string>
+    <string name="build_sdk">SDK</string>
+    <string name="build_device">Device</string>
+    <string name="build_android">Android</string>
+    <string name="build_screen">Screen</string>
+    <string name="build_abi">ABI</string>
+    <string name="build_source">Source</string>
+    <string name="build_license">License</string>
+    <string name="build_link_failed">No app can open links</string>
+    <plurals name="build_secret_remaining">
+        <item quantity="one">%1$d more tap</item>
+        <item quantity="other">%1$d more taps</item>
+    </plurals>
+
+    <!-- First-launch permission guide -->
+    <string name="onboarding_title">Setup</string>
+    <string name="onboarding_step_overlay_title">Display over other apps</string>
+    <string name="onboarding_step_overlay_body">The handle floats above whichever app you are using. Without this permission it cannot be drawn at all.</string>
+    <string name="onboarding_step_overlay_hint">In system settings, find Morg and allow “Display over other apps”.</string>
+    <string name="onboarding_step_usage_title">Usage access</string>
+    <string name="onboarding_step_usage_body">Morg reads which app is in the foreground so the handle can stay hidden on the home screen and in Recents. The data never leaves your device.</string>
+    <string name="onboarding_step_usage_hint">Open the usage access list and turn Morg on.</string>
+    <string name="onboarding_step_freeform_title">Window support</string>
+    <string name="onboarding_step_freeform_body_unavailable">This device has no built-in small window, so Morg needs “Enable freeform windows” (or “Force activities to be resizable”) in Developer options. Without it, apps can only open fullscreen.</string>
+    <string name="onboarding_step_freeform_body_ready">This device reports small-window support. Open one once to confirm it really works — a setting being on is not proof.</string>
+    <string name="onboarding_step_freeform_hint_unavailable">Turn the switch on in Developer options, then come back and tap “Try a window”. Seeing one window pop up and closing it is the confirmation.</string>
+    <string name="onboarding_step_freeform_hint_ready">“Try a window” opens a small window and closes it again. If it really comes up small, the check passes.</string>
+    <string name="onboarding_step_notifications_title">Notifications</string>
+    <string name="onboarding_step_notifications_body">While the handle runs, a persistent notification carries a “Stop” button. Without it, a handle covering the screen would be hard to turn off.</string>
+    <string name="onboarding_step_notifications_hint">Declining only hides that notification; the handle still works.</string>
+    <string name="onboarding_required">Required permission</string>
+    <string name="onboarding_optional">Optional permission</string>
+    <string name="onboarding_optional_setup">Optional setting</string>
+    <string name="onboarding_granted">Granted</string>
+    <string name="onboarding_not_granted">Not granted</string>
+    <string name="onboarding_grant">Grant access</string>
+    <string name="onboarding_try_window">Try a window</string>
+    <string name="onboarding_confirmed">Confirmed</string>
+    <string name="onboarding_not_confirmed">Not confirmed</string>
+    <string name="onboarding_grant_notifications">Allow notifications</string>
+    <string name="onboarding_next">Continue</string>
+    <string name="onboarding_finish">Start using Morg</string>
+    <string name="onboarding_later">Set up later</string>
+    <string name="onboarding_skip_all">Skip setup</string>
+
+    <!-- Small-window self check -->
+    <string name="probe_title">Window check</string>
+    <string name="probe_checking">Checking whether this window is really a small window…</string>
+    <string name="probe_success">A small window opened correctly. Closing it finishes the check.</string>
+    <string name="probe_fullscreen">This opened fullscreen, so the small window is not working yet. Turn on “Enable freeform windows” in Developer options.</string>
+    <string name="probe_close">Close window</string>
+    <string name="probe_not_available">No window capability detected yet. Turn on “Enable freeform windows” in Developer options first.</string>
+    <string name="probe_failed">Could not open the check window. Try again in a moment.</string>
+    <string name="toast_window_confirmed">Small window confirmed</string>
+    <string name="toast_window_not_confirmed">Small window still not working — check Developer options</string>
+
+    <string name="notification_channel_name">Edge handle</string>
+    <string name="notification_title">Morg is running</string>
+    <string name="notification_text">Swipe the edge handle to open another instance</string>
+    <string name="notification_stop">Stop</string>
+
+    <string name="tile_label">Edge handle</string>
+</resources>

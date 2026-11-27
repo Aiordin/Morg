@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        浅色模式下的窗口主题。
+
+        必须与 Compose 的 MorgTheme 一致（两者都跟随系统深色模式）：
+        `enableEdgeToEdge()` 按主题的明暗决定状态栏/导航栏图标的深浅。
+        这里固定用深色主题时，浅色界面顶部会露出一条深色窗口背景、图标却是白的
+        —— 与界面割裂。
+
+        `windowLightStatusBar` / `windowLightNavigationBar` 让系统用深色图标，
+        配合 values-night 里的同名主题，跟随系统自动切换。
+    -->
+    <style name="Theme.Morg" parent="android:Theme.DeviceDefault.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

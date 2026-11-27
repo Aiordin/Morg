@@ -1,0 +1,25 @@
+# Gradle / 构建产物
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.kotlin/
+captures/
+
+# 签名材料：绝不入库
+*.jks
+*.keystore
+!debug.keystore
+keystore.properties
+
+# 本地文档与设计笔记：只在本地保留，不随仓库发布
+docs/
+
+# Agent / 编辑器本地状态
+.codewhale/
+.DS_Store
+
+# 打包输出
+releases/
+*.apk

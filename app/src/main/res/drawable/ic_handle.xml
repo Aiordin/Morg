@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 通知栏图标：一条竖条 + 向右的箭头，暗示「侧滑」。单色，跟随系统 tint。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFFFF">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M4,7h2v10H4z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M9,11h6.2l-2.1,-2.1 1.4,-1.4 4.5,4.5 -4.5,4.5 -1.4,-1.4 2.1,-2.1H9z" />
+</vector>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        图标底色（#BEAEF6）。
+
+        自适应图标的前景层已经按 63% 缩放到安全区内，四周留白必须与底色完全相同，
+        否则启动器放大到 108dp 时会看到一圈色差方框。
+    -->
+    <color name="ic_launcher_background">#BEAEF6</color>
+</resources>

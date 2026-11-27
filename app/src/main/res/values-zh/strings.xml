@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Morg</string>
+
+    <string name="section_service">服务</string>
+    <string name="service_enabled">边缘手柄</string>
+    <string name="service_enabled_desc">应用在前台时显示手柄</string>
+    <string name="section_mode">打开方式</string>
+    <string name="mode_fullscreen">全屏</string>
+    <string name="mode_fullscreen_desc">新开一个全屏任务</string>
+    <string name="mode_window">小窗</string>
+    <string name="mode_window_desc">浮在屏幕上，可以和原来的画面同时看</string>
+    <string name="section_position">位置</string>
+    <string name="position_editing">调整位置</string>
+    <string name="position_editing_desc">拖动手柄，松手后自动吸附到最近的一侧</string>
+    <string name="current_edge">当前贴靠：%1$s</string>
+    <string name="edge_left">左侧</string>
+    <string name="edge_right">右侧</string>
+
+    <string name="grant_overlay">授予「显示在其他应用上层」</string>
+    <string name="grant_usage_access">授予使用情况访问（用于识别前台应用）</string>
+    <string name="window_freeform_only">这台设备没有原生小窗，会退回 AOSP 自由窗口，观感不同。</string>
+    <string name="window_unavailable">小窗需要自由窗口支持。请在开发者选项里开启「强制允许 Activity 可调整大小」或「可自由调整的窗口」。</string>
+    <string name="open_developer_options">打开开发者选项</string>
+
+    <string name="footer_hint">侧滑边缘手柄，为你正在用的应用再开一个实例。</string>
+
+    <!-- 构建信息（连点字标 7 次进入） -->
+    <string name="build_info_title">构建信息</string>
+    <string name="build_section_app">应用</string>
+    <string name="build_section_build">构建</string>
+    <string name="build_section_device">设备</string>
+    <string name="build_version">版本</string>
+    <string name="build_package">包名</string>
+    <string name="build_type">类型</string>
+    <string name="build_git">Git</string>
+    <string name="build_stamp">构建时间</string>
+    <string name="build_sdk">SDK</string>
+    <string name="build_device">设备</string>
+    <string name="build_android">系统</string>
+    <string name="build_screen">屏幕</string>
+    <string name="build_abi">ABI</string>
+    <string name="build_source">源码</string>
+    <string name="build_license">许可</string>
+    <string name="build_link_failed">没有可以打开链接的应用</string>
+    <plurals name="build_secret_remaining">
+        <item quantity="other">再点 %1$d 次</item>
+    </plurals>
+
+    <!-- 首次启动权限引导 -->
+    <string name="onboarding_title">首次设置</string>
+    <string name="onboarding_step_overlay_title">显示在其他应用上层</string>
+    <string name="onboarding_step_overlay_body">手柄要浮在你正在用的应用之上，没有这项权限就画不出来。</string>
+    <string name="onboarding_step_overlay_hint">在系统设置里找到 Morg，打开「显示在其他应用上层」。</string>
+    <string name="onboarding_step_usage_title">使用情况访问</string>
+    <string name="onboarding_step_usage_body">Morg 通过它判断当前前台是哪个应用，才能在桌面和最近任务里把手柄收好。这些数据只在本机读取。</string>
+    <string name="onboarding_step_usage_hint">在「使用情况访问权限」列表里找到 Morg 并打开。</string>
+    <string name="onboarding_step_freeform_title">小窗支持</string>
+    <string name="onboarding_step_freeform_body_unavailable">这台设备没有自带的小窗能力，需要在开发者选项里开启「可自由调整的窗口」（或「强制允许 Activity 可调整大小」）。不开的话，打开方式只能选全屏。</string>
+    <string name="onboarding_step_freeform_body_ready">这台设备报告支持小窗。开关打开不等于真能用，开一次确认一下。</string>
+    <string name="onboarding_step_freeform_hint_unavailable">先在开发者选项里打开开关，回来点「试试小窗」：弹出一个小窗再关掉它，就算确认完成。</string>
+    <string name="onboarding_step_freeform_hint_ready">「试试小窗」会打开一个小窗并自动关闭；真的能开出来，就说明小窗可用。</string>
+    <string name="onboarding_step_notifications_title">通知</string>
+    <string name="onboarding_step_notifications_body">手柄运行时有一条常驻通知，里面有「停止」按钮。没有它，手柄盖住屏幕时就很难关掉。</string>
+    <string name="onboarding_step_notifications_hint">拒绝只会隐藏这条通知，手柄本身照常工作。</string>
+    <string name="onboarding_required">必需权限</string>
+    <string name="onboarding_optional">可选权限</string>
+    <string name="onboarding_optional_setup">可选设置</string>
+    <string name="onboarding_granted">已授予</string>
+    <string name="onboarding_not_granted">未授予</string>
+    <string name="onboarding_grant">去授权</string>
+    <string name="onboarding_try_window">试试小窗</string>
+    <string name="onboarding_confirmed">已确认</string>
+    <string name="onboarding_not_confirmed">未确认</string>
+    <string name="onboarding_grant_notifications">允许通知</string>
+    <string name="onboarding_next">继续</string>
+    <string name="onboarding_finish">开始使用</string>
+    <string name="onboarding_later">稍后设置</string>
+    <string name="onboarding_skip_all">跳过设置</string>
+
+    <!-- 小窗自检 -->
+    <string name="probe_title">小窗自检</string>
+    <string name="probe_checking">正在检查这扇窗口是不是真的小窗…</string>
+    <string name="probe_success">小窗打开正常，关掉它就算确认完成。</string>
+    <string name="probe_fullscreen">这次打开的是全屏，小窗还没生效。请在开发者选项里打开「可自由调整的窗口」。</string>
+    <string name="probe_close">关闭小窗</string>
+    <string name="probe_not_available">还没检测到小窗能力，请先在开发者选项里打开「可自由调整的窗口」。</string>
+    <string name="probe_failed">没能打开自检窗口，稍后再试一次。</string>
+    <string name="toast_window_confirmed">小窗已确认可用</string>
+    <string name="toast_window_not_confirmed">小窗仍未生效，请检查开发者选项</string>
+
+    <string name="notification_channel_name">边缘手柄</string>
+    <string name="notification_title">Morg 正在运行</string>
+    <string name="notification_text">侧滑边缘手柄可以再开一个实例</string>
+    <string name="notification_stop">停止</string>
+
+    <string name="tile_label">边缘手柄</string>
+</resources>
