@@ -17,6 +17,8 @@ import aiordin.morg.overlay.HandleService
 import aiordin.morg.ui.BuildInfoScreen
 import aiordin.morg.ui.MainScreen
 import aiordin.morg.ui.OnboardingScreen
+import aiordin.morg.ui.WelcomeScreen
+import aiordin.morg.ui.WindowGuideScreen
 import aiordin.morg.ui.rememberBuildInfoSections
 import aiordin.morg.ui.theme.MorgTheme
 import android.Manifest
@@ -72,6 +74,9 @@ public class MainActivity : ComponentActivity() {
     /** 最近一次小窗自检。只有它为「小窗」时，引导里的小窗步骤才算完成。 */
     private var probeRecord by mutableStateOf<WindowProbeRecord?>(null)
 
+    /** 当前显示的首次引导；`null` 表示主界面。开关回调是 Activity 成员，所以放在这里。 */
+    private var activeGuide by mutableStateOf<Guide?>(null)
+
     // POST_NOTIFICATIONS 是 API 33 才有的常量（字符串常量会被内联），
     // 调用点由 OnboardingScreen 的 notificationsAvailable 控制，低版本不会走到。
     @SuppressLint("InlinedApi")
@@ -80,6 +85,9 @@ public class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         refreshPermissions()
         refreshWindowSupport()
+        activeGuide = savedInstanceState
+            ?.getString(KEY_ACTIVE_GUIDE)
+            ?.let { name -> runCatching { Guide.valueOf(name) }.getOrNull() }
 
         setContent {
             val settings by app.settings.state.collectAsStateWithLifecycle()
@@ -93,6 +101,7 @@ public class MainActivity : ComponentActivity() {
             // 用 rememberSaveable 让转屏、切后台回来后仍停在这一页。
             var showBuildInfo by rememberSaveable { mutableStateOf(false) }
             BackHandler(enabled = showBuildInfo) { showBuildInfo = false }
+            BackHandler(enabled = activeGuide != null) { dismissActiveGuide() }
 
             MorgTheme {
                 Surface(
@@ -106,11 +115,13 @@ public class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .safeDrawingPadding(),
                     ) {
-                        if (Onboarding.shouldShow(settings.onboardingCompleted)) {
-                            OnboardingScreen(
+                        when {
+                            Onboarding.shouldShowWelcome(settings.welcomeCompleted) -> WelcomeScreen(
+                                onStart = { app.settings.setWelcomeCompleted(true) },
+                            )
+
+                            activeGuide == Guide.Service -> OnboardingScreen(
                                 status = permissionStatus,
-                                windowSupport = windowSupport,
-                                windowConfirmed = windowConfirmed(),
                                 notificationsAvailable = permissions.notificationsAvailable,
                                 onOpenOverlaySettings = {
                                     openSettings(permissions.overlaySettingsIntent())
@@ -118,25 +129,34 @@ public class MainActivity : ComponentActivity() {
                                 onOpenUsageSettings = {
                                     openSettings(permissions.usageAccessSettingsIntent())
                                 },
-                                onOpenDeveloperOptions = ::openDeveloperOptions,
-                                onTryWindow = ::startWindowProbe,
                                 onRequestNotifications = {
                                     notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                                 },
-                                onFinish = { finishOnboarding(enableHandle = true) },
-                                onDismiss = { finishOnboarding(enableHandle = false) },
+                                onFinish = { finishServiceGuide(start = true) },
+                                onDismiss = { finishServiceGuide(start = false) },
                             )
-                        } else if (showBuildInfo) {
-                            BuildInfoScreen(
+
+                            activeGuide == Guide.Window -> WindowGuideScreen(
+                                windowSupport = windowSupport,
+                                windowConfirmed = windowConfirmed(),
+                                onOpenDeveloperOptions = ::openDeveloperOptions,
+                                onTryWindow = ::startWindowProbe,
+                                onEnable = { finishWindowGuide(enable = true) },
+                                onDismiss = { finishWindowGuide(enable = false) },
+                            )
+
+                            showBuildInfo -> BuildInfoScreen(
                                 sections = rememberBuildInfoSections(),
                                 onBack = { showBuildInfo = false },
                             )
-                        } else {
-                            MainScreen(
+
+                            else -> MainScreen(
                                 app = app,
                                 windowSupport = windowSupport,
                                 hasOverlayPermission = permissionStatus.overlay,
                                 hasUsageAccess = permissionStatus.usageAccess,
+                                onServiceChecked = ::requestService,
+                                onWindowChecked = ::requestWindow,
                                 onOpenBuildInfo = { showBuildInfo = true },
                             )
                         }
@@ -153,31 +173,83 @@ public class MainActivity : ComponentActivity() {
         ensureServiceMatchesSettings()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // 小窗自检会把应用退到后台；进程若被回收，回来时还想停在同一段引导。
+        activeGuide?.let { outState.putString(KEY_ACTIVE_GUIDE, it.name) }
+    }
+
     private fun windowConfirmed(): Boolean =
         probeRecord?.result == WindowProbeResult.SmallWindow
 
-    /**
-     * 结束引导。
-     *
-     * 两项必需权限都到手时顺手把手柄打开 —— 用户点「开始使用」的意图就是这个，
-     * 再让他在设置页拨一次开关只是多一步。缺权限时不开：服务起来也画不出来。
-     */
-    private fun finishOnboarding(enableHandle: Boolean) {
+    /** 首次打开走引导；看过引导后仍缺浮窗权限的，直接跳系统设置。 */
+    private fun requestService(enabled: Boolean) {
+        if (!enabled) {
+            app.settings.setServiceEnabled(false)
+            HandleService.stop(this)
+            return
+        }
+        if (Onboarding.shouldShowGuide(app.settings.state.value.serviceGuideSeen)) {
+            activeGuide = Guide.Service
+            return
+        }
+        if (!permissionStatus.overlay) {
+            openSettings(permissions.overlaySettingsIntent())
+            return
+        }
+        app.settings.setServiceEnabled(true)
+        HandleService.start(this)
+    }
+
+    /** 必需权限齐了才开服务；跳过也记为「看过」。 */
+    private fun finishServiceGuide(start: Boolean) {
         refreshPermissions()
-        app.settings.setOnboardingCompleted(true)
-        if (enableHandle && Onboarding.isReady(permissionStatus)) {
+        app.settings.markServiceGuideSeen()
+        activeGuide = null
+        if (start && Onboarding.isReady(permissionStatus)) {
             app.settings.setServiceEnabled(true)
             HandleService.start(this)
         }
     }
 
-    /**
-     * 让服务的实际运行状态追上设置。
-     *
-     * 覆盖这几条容易被忽略的路径：进程被系统回收、APK 覆盖安装、
-     * 用户从系统设置里撤销权限后又重新授予。没有这一步时，
-     * 开关显示「开」但实际没有手柄，是用户一眼能看出的不一致。
-     */
+    /** 打开方式开关：关 = 全屏，开 = 小窗。首次打开先走小窗引导。 */
+    private fun requestWindow(enabled: Boolean) {
+        if (!enabled) {
+            app.settings.setLaunchMode(LaunchMode.Fullscreen)
+            return
+        }
+        if (Onboarding.shouldShowGuide(app.settings.state.value.windowGuideSeen)) {
+            activeGuide = Guide.Window
+            return
+        }
+        if (windowSupport == WindowSupport.Unavailable) {
+            toast(R.string.probe_not_available)
+            return
+        }
+        app.settings.setLaunchMode(LaunchMode.Window)
+    }
+
+    private fun finishWindowGuide(enable: Boolean) {
+        app.settings.markWindowGuideSeen()
+        activeGuide = null
+        if (!enable) return
+        if (windowSupport == WindowSupport.Unavailable) {
+            toast(R.string.probe_not_available)
+        } else {
+            app.settings.setLaunchMode(LaunchMode.Window)
+        }
+    }
+
+    /** 系统返回键关掉当前引导，与引导里的「稍后设置」等价。 */
+    private fun dismissActiveGuide() {
+        when (activeGuide) {
+            Guide.Service -> finishServiceGuide(start = false)
+            Guide.Window -> finishWindowGuide(enable = false)
+            null -> Unit
+        }
+    }
+
+    /** 让服务的实际运行状态追上设置：进程被回收、覆盖安装、重新授权后都会走到。 */
     private fun ensureServiceMatchesSettings() {
         if (!app.settings.state.value.serviceEnabled) return
         if (!permissionStatus.overlay) return
@@ -188,12 +260,7 @@ public class MainActivity : ComponentActivity() {
         permissionStatus = permissions.status()
     }
 
-    /**
-     * 重读小窗能力。
-     *
-     * 先取走自检结果（一次性）：它比设置项更可信 —— 开关打开、`windowingMode`
-     * 仍可能被 ROM 丢弃。没有新结果就沿用上一次的结论。
-     */
+    /** 取走自检结果（一次性）并合并进静态探测；自检结果优先。 */
     private fun refreshWindowSupport() {
         probeStore.consume()?.let { record ->
             probeRecord = record
@@ -332,5 +399,14 @@ public class MainActivity : ComponentActivity() {
     private companion object {
         /** 退到后台到启动自检页之间的间隔，留给系统完成 task 切换。 */
         private const val PROBE_START_DELAY_MS = 400L
+
+        /** 转屏或进程被回收后恢复「正在看哪段引导」。 */
+        private const val KEY_ACTIVE_GUIDE = "active_guide"
+    }
+
+    /** 三段首次引导。 */
+    private enum class Guide {
+        Service,
+        Window,
     }
 }

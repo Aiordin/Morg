@@ -4,9 +4,7 @@ import aiordin.morg.MorgApp
 import aiordin.morg.R
 import aiordin.morg.core.SecretTapCounter
 import aiordin.morg.core.TapResult
-import aiordin.morg.launch.LaunchMode
 import aiordin.morg.launch.WindowSupport
-import aiordin.morg.overlay.HandleService
 import android.content.Intent
 import android.os.SystemClock
 import android.provider.Settings as AndroidSettings
@@ -23,15 +21,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,15 +60,16 @@ public fun MainScreen(
     windowSupport: WindowSupport,
     hasOverlayPermission: Boolean,
     hasUsageAccess: Boolean,
+    onServiceChecked: (Boolean) -> Unit,
+    onWindowChecked: (Boolean) -> Unit,
     onOpenBuildInfo: () -> Unit,
 ) {
     val context = LocalContext.current
     val settings by app.settings.state.collectAsStateWithLifecycle()
     val tapCounter = remember { SecretTapCounter() }
 
-    // 倒数提示。不用系统 Toast：ColorOS 上 `cancel()` 与连发 `show()` 都不可靠
-    // （实测会排队、丢提示、跳页后残留），而这里只需要一个「短暂浮在底部」的条。
-    // 自绘的浮层随 MainScreen 一起卸载，跳详情页时自然消失。
+    // 提示条自绘：只需要「短暂浮在底部」，不依赖系统 Toast 的行为。
+    // 浮层随 MainScreen 一起卸载，跳详情页时自然消失。
     var hint by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(hint) {
         if (hint != null) {
@@ -120,11 +116,9 @@ public fun MainScreen(
                     title = stringResource(R.string.service_enabled),
                     subtitle = stringResource(R.string.service_enabled_desc),
                     checked = settings.serviceEnabled,
-                    enabled = hasOverlayPermission,
-                    onCheckedChange = { enabled ->
-                        app.settings.setServiceEnabled(enabled)
-                        if (enabled) HandleService.start(context) else HandleService.stop(context)
-                    },
+                    // 首次开启要走权限引导，所以这里不因缺权限而禁用。
+                    enabled = true,
+                    onCheckedChange = onServiceChecked,
                 )
                 if (!hasOverlayPermission) {
                     ActionRow(
@@ -149,19 +143,16 @@ public fun MainScreen(
                 }
             }
 
-            // —— 模式 ——
+            // —— 打开方式：关 = 全屏，开 = 小窗 ——
             SettingCard(title = stringResource(R.string.section_mode)) {
-                Column(Modifier.selectableGroup()) {
-                    LaunchMode.entries.forEach { mode ->
-                        ModeRow(
-                            mode = mode,
-                            selected = settings.launchMode == mode,
-                            // 小窗在两种支持都没有的设备上不可选，避免用户选了却得到全屏。
-                            enabled = mode == LaunchMode.Fullscreen || windowSupport != WindowSupport.Unavailable,
-                            onSelect = { app.settings.setLaunchMode(mode) },
-                        )
-                    }
-                }
+                SwitchRow(
+                    title = stringResource(R.string.window_mode_enabled),
+                    subtitle = stringResource(R.string.window_mode_enabled_desc),
+                    checked = settings.windowModeEnabled,
+                    // 两个支持都没有时不可开：否则用户看到「开」，实际只会得到全屏。
+                    enabled = windowSupport != WindowSupport.Unavailable,
+                    onCheckedChange = onWindowChecked,
+                )
                 if (windowSupport != WindowSupport.Ready) {
                     WindowSupportHint(windowSupport)
                 }
@@ -272,46 +263,6 @@ private fun SwitchRow(
         }
         Spacer(Modifier.width(12.dp))
         Switch(checked = checked, onCheckedChange = null, enabled = enabled)
-    }
-}
-
-@Composable
-private fun ModeRow(
-    mode: LaunchMode,
-    selected: Boolean,
-    enabled: Boolean,
-    onSelect: () -> Unit,
-) {
-    val (title, subtitle) = when (mode) {
-        LaunchMode.Fullscreen ->
-            stringResource(R.string.mode_fullscreen) to stringResource(R.string.mode_fullscreen_desc)
-
-        LaunchMode.Window ->
-            stringResource(R.string.mode_window) to stringResource(R.string.mode_window_desc)
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .selectable(
-                selected = selected,
-                enabled = enabled,
-                role = Role.RadioButton,
-                onClick = onSelect,
-            )
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(selected = selected, onClick = null, enabled = enabled)
-        Spacer(Modifier.width(8.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
     }
 }
 

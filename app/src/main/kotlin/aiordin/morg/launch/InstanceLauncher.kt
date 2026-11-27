@@ -63,7 +63,7 @@ public object WindowLaunchDecision {
         side: DockSide,
     ): WindowRequest {
         val windowingMode = WindowMode.resolve(mode, zoomSupported, freeformEnabled)
-        // ColorOS 的 zoom 模式自己算尺寸位置，塞 bounds 反而会干扰它。
+        // zoom 模式由系统自己排版，传 bounds 会干扰它。
         val bounds = if (windowingMode == WindowMode.FREEFORM) {
             freeformBounds(screen, side)
         } else {
@@ -75,7 +75,7 @@ public object WindowLaunchDecision {
     /**
      * freeform 退路用的初始边界：宽 62%、高 58%，靠手柄那一侧，纵向略偏上。
      *
-     * 这条路径只有非 ColorOS 设备才会走到，位置跟随手柄侧别能让观感接近原生小窗。
+     * 这条路径只有没有原生小窗的设备才会走到；位置跟随手柄侧别，观感更接近原生小窗。
      */
     public fun freeformBounds(
         screen: Pair<Int, Int>,
@@ -99,46 +99,45 @@ public object WindowLaunchDecision {
 }
 
 /**
+ * 一次「再开一个」的完整请求：带好 flags、显式组件与窗口参数。
+ *
+ * 拆成「准备」与「启动」两步，是因为磁贴需要把 intent 包成 `PendingIntent`
+ * 交给 `startActivityAndCollapse`（它同时收起面板）。
+ */
+public data class LaunchCommand(
+    /** 已带 `NEW_TASK | MULTIPLE_TASK`，且指向具体组件。 */
+    val intent: Intent,
+    /** `ActivityOptions` 的 bundle（windowingMode 与可能的初始边界）。 */
+    val options: Bundle,
+    /** 本次请求的 windowingMode，仅用于日志。 */
+    val windowingMode: Int,
+)
+
+/**
  * 把「当前前台应用」再打开一次。
  *
- * ## 「多开」到底是什么
- *
- * 不是多进程 —— 实测同一应用的多份实例共享一个进程（`ps` 只有一个 PID）。
- * 真正发生的是**多个 Task**：每个 Task 有自己的返回栈与 Activity 实例，
- * 所以两份实例可以停在不同页面（例如一个停在笔记列表、另一个停在某篇笔记详情）。
- *
- * 触发条件里 `FLAG_ACTIVITY_MULTIPLE_TASK` 是必须的，但**只有目标当前不在前台时才生效**。
- * 实测：目标在前台时系统会提示 "intent has been delivered to currently running
- * top-most instance" 并复用现有 Task；目标在后台时则新建 Task。
- * 而本项目的调用方永远是自己（手柄所在的服务），所以自然满足这个前提。
- *
- * ## 为什么不用 `startZoomWindow()`
- *
- * 那个 API 受 `oplus.permission.OPLUS_COMPONENT_SAFE`（signature 级）保护，
- * 第三方（含 adb shell / Shizuku，UID 2000）调用直接 `SecurityException`。
- * 但把 `android.activity.windowingMode` 写进 `ActivityOptions` 不做签名校验，
- * 效果等价 —— `ActivityStarter` 只从 bundle 里读这个 key，不校验签名。
+ * 多开是「多个 Task」而不是多个进程：每个 Task 有自己的返回栈与 Activity 实例。
+ * `FLAG_ACTIVITY_MULTIPLE_TASK` 是必须的，但目标已在前台时会被系统复用。
  */
 public class InstanceLauncher(
     private val context: Context,
 ) {
     /**
-     * 再开一个 [packageName] 的实例。
+     * 准备一次启动，不执行。
      *
-     * @return 成功时返回 true。失败（应用被卸载、没有启动入口）返回 false。
+     * @return 目标没有启动入口时返回 null（包可见性未配好，或应用已卸载）
      */
-    public suspend fun launchAnother(
+    public suspend fun prepare(
         packageName: String,
         mode: LaunchMode,
         side: DockSide,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): LaunchCommand? = withContext(Dispatchers.IO) {
         val pm = context.packageManager
         val intent = runCatching { pm.getLaunchIntentForPackage(packageName) }.getOrNull()
             ?: run {
-                // 最常见的原因是 Android 11+ 的包可见性：manifest 里少了 <queries>。
-                // 静默返回 false 会让这个坑非常难查，所以必须留日志。
+                // 包可见性没配好（Android 11+ 需要 <queries>）时这里返回 null。
                 Log.w(TAG, "no launch intent for $packageName (missing <queries> or app removed?)")
-                return@withContext false
+                return@withContext null
             }
 
         // MULTIPLE_TASK 才是「新开一个」的关键；NEW_TASK 是后台启动的必要条件。
@@ -146,6 +145,10 @@ public class InstanceLauncher(
             Intent.FLAG_ACTIVITY_NEW_TASK or
                 Intent.FLAG_ACTIVITY_MULTIPLE_TASK,
         )
+        // 磁贴要把这个 intent 包成 PendingIntent，而 PendingIntent 只接受显式 intent。
+        runCatching { pm.resolveActivity(intent, 0)?.activityInfo }.getOrNull()?.let { info ->
+            intent.setComponent(android.content.ComponentName(info.packageName, info.name))
+        }
 
         val screen = screenSize()
         val request = WindowLaunchDecision.request(
@@ -178,15 +181,29 @@ public class InstanceLauncher(
             }
         }
 
+        LaunchCommand(intent = intent, options = bundle, windowingMode = request.windowingMode)
+    }
+
+    /**
+     * 再开一个 [packageName] 的实例。
+     *
+     * @return 成功时返回 true。失败（应用被卸载、没有启动入口）返回 false。
+     */
+    public suspend fun launchAnother(
+        packageName: String,
+        mode: LaunchMode,
+        side: DockSide,
+    ): Boolean = withContext(Dispatchers.IO) {
+        val command = prepare(packageName, mode, side) ?: return@withContext false
+
         Log.i(
             TAG,
-            "launching $packageName flags=0x${intent.flags.toString(16)} " +
-                "bundleKeys=${bundle.keySet()} " +
-                "mode=${bundle.getInt(WindowMode.KEY_LAUNCH_WINDOWING_MODE, -1)}",
+            "launching $packageName flags=0x${command.intent.flags.toString(16)} " +
+                "bundleKeys=${command.options.keySet()} mode=${command.windowingMode}",
         )
         runCatching {
-            context.startActivity(intent, bundle)
-            Log.i(TAG, "launched $packageName mode=${request.windowingMode}")
+            context.startActivity(command.intent, command.options)
+            Log.i(TAG, "launched $packageName mode=${command.windowingMode}")
             true
         }.getOrElse { error ->
             Log.w(TAG, "launch $packageName failed: ${error.javaClass.simpleName}: ${error.message}")
@@ -208,8 +225,8 @@ public class InstanceLauncher(
     /**
      * 开发者选项里的自由窗口开关。
      *
-     * 注意**不用** `PackageManager.hasSystemFeature(FEATURE_FREEFORM_WINDOW_MANAGEMENT)`：
-     * ColorOS 不声明那个 feature 位，但开关打开后 freeform 确实可用，用 feature 判断会误判。
+     * 读 `Settings.Global` 而不是 `hasSystemFeature(FEATURE_FREEFORM_WINDOW_MANAGEMENT)`：
+     * 后者在部分 ROM 上读不到，与实际可用性不一致。
      */
     private fun freeformEnabled(): Boolean {
         val resolver = context.contentResolver

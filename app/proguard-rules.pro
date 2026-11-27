@@ -1,8 +1,10 @@
 # R8 / ProGuard 规则
 #
-# 目前 release 构建没有开启压缩与混淆（app/build.gradle.kts 里
-# isMinifyEnabled = false），这个文件是开启前的占位。
+# 当前为空是安全的：
 #
-# 开启时需要注意：应用内没有通过反射访问自己的类。仅有的两处反射都指向
-# framework 类型（ActivityOptions#setLaunchWindowingMode、
-# UsageEvents.Event#getInstanceId），它们不参与 R8，因此不需要 keep 规则。
+# - Manifest 声明的组件由 AAPT 生成的规则自动保留。
+# - 应用没有反射访问自己的类；两处反射都指向 framework 类型
+#   （ActivityOptions#setLaunchWindowingMode、UsageEvents.Event#getInstanceId）。
+# - Compose 与 coroutines 的 consumer rules 由各自 AAR 提供，AGP 自动合并。
+#
+# 新增「反射访问自己的类」时，在这里补 keep 规则。

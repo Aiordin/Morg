@@ -72,13 +72,26 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // 压缩代码与资源，否则 Compose 全量进包。
+            // 应用没有反射访问自己的类，所以不需要额外 keep 规则，见 proguard-rules.pro。
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // 没有发布密钥时用 debug 签名：产出的 APK 能安装、能试用，
             // 但不能作为正式发版身份（升级到正式签名时需要卸载重装）。
             signingConfig = signingConfigs.findByName("release")
                 ?: signingConfigs.getByName("debug")
         }
+    }
+
+    androidResources {
+        // 依赖库带大量 locale 资源，而本项目只提供英文与中文。
+        localeFilters += listOf("en", "zh")
+    }
+
+    dependenciesInfo {
+        // 依赖清单与运行无关，不随 APK 分发。
+        includeInApk = false
     }
 
     compileOptions {

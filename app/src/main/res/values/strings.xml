@@ -6,10 +6,8 @@
     <string name="service_enabled">Edge handle</string>
     <string name="service_enabled_desc">Show the handle while an app is in the foreground</string>
     <string name="section_mode">Open as</string>
-    <string name="mode_fullscreen">Fullscreen</string>
-    <string name="mode_fullscreen_desc">A new fullscreen task</string>
-    <string name="mode_window">Window</string>
-    <string name="mode_window_desc">A floating window you can see at the same time</string>
+    <string name="window_mode_enabled">Open in a window</string>
+    <string name="window_mode_enabled_desc">Off: new instances open fullscreen. On: they float over the current screen</string>
     <string name="section_position">Position</string>
     <string name="position_editing">Adjust position</string>
     <string name="position_editing_desc">Drag the handle, release to snap to the nearest edge</string>
@@ -23,7 +21,7 @@
     <string name="window_unavailable">Window mode needs freeform windows. Enable “Force activities to be resizable” or “Enable freeform windows” in Developer options.</string>
     <string name="open_developer_options">Open Developer options</string>
 
-    <string name="footer_hint">Swipe the edge handle to open another instance of the app you are in.</string>
+    <string name="footer_hint">Swipe the edge handle, or tap “New window” in Quick Settings, to open another instance of the app you are in.</string>
 
     <!-- Build info (tap the ASCII logo 7 times) -->
     <string name="build_info_title">Build info</string>
@@ -49,30 +47,23 @@
     </plurals>
 
     <!-- First-launch permission guide -->
-    <string name="onboarding_title">Setup</string>
+    <string name="onboarding_title">Enable the handle</string>
     <string name="onboarding_step_overlay_title">Display over other apps</string>
     <string name="onboarding_step_overlay_body">The handle floats above whichever app you are using. Without this permission it cannot be drawn at all.</string>
     <string name="onboarding_step_overlay_hint">In system settings, find Morg and allow “Display over other apps”.</string>
     <string name="onboarding_step_usage_title">Usage access</string>
     <string name="onboarding_step_usage_body">Morg reads which app is in the foreground so the handle can stay hidden on the home screen and in Recents. The data never leaves your device.</string>
     <string name="onboarding_step_usage_hint">Open the usage access list and turn Morg on.</string>
-    <string name="onboarding_step_freeform_title">Window support</string>
-    <string name="onboarding_step_freeform_body_unavailable">This device has no built-in small window, so Morg needs “Enable freeform windows” (or “Force activities to be resizable”) in Developer options. Without it, apps can only open fullscreen.</string>
-    <string name="onboarding_step_freeform_body_ready">This device reports small-window support. Open one once to confirm it really works — a setting being on is not proof.</string>
     <string name="onboarding_step_freeform_hint_unavailable">Turn the switch on in Developer options, then come back and tap “Try a window”. Seeing one window pop up and closing it is the confirmation.</string>
-    <string name="onboarding_step_freeform_hint_ready">“Try a window” opens a small window and closes it again. If it really comes up small, the check passes.</string>
     <string name="onboarding_step_notifications_title">Notifications</string>
     <string name="onboarding_step_notifications_body">While the handle runs, a persistent notification carries a “Stop” button. Without it, a handle covering the screen would be hard to turn off.</string>
     <string name="onboarding_step_notifications_hint">Declining only hides that notification; the handle still works.</string>
     <string name="onboarding_required">Required permission</string>
     <string name="onboarding_optional">Optional permission</string>
-    <string name="onboarding_optional_setup">Optional setting</string>
     <string name="onboarding_granted">Granted</string>
     <string name="onboarding_not_granted">Not granted</string>
     <string name="onboarding_grant">Grant access</string>
     <string name="onboarding_try_window">Try a window</string>
-    <string name="onboarding_confirmed">Confirmed</string>
-    <string name="onboarding_not_confirmed">Not confirmed</string>
     <string name="onboarding_grant_notifications">Allow notifications</string>
     <string name="onboarding_next">Continue</string>
     <string name="onboarding_finish">Start using Morg</string>
@@ -92,8 +83,34 @@
 
     <string name="notification_channel_name">Edge handle</string>
     <string name="notification_title">Morg is running</string>
-    <string name="notification_text">Swipe the edge handle to open another instance</string>
+    <string name="notification_text">Swipe the handle or tap “New window” in Quick Settings</string>
     <string name="notification_stop">Stop</string>
 
     <string name="tile_label">Edge handle</string>
+    <string name="tile_launch_label">New window</string>
+
+    <!-- Welcome (first launch) -->
+    <string name="welcome_title">Welcome to Morg</string>
+    <string name="welcome_body">Morg opens another instance of the app you are already using. Two ways in: the edge handle, or “New window” in the Control Center.</string>
+    <string name="welcome_point_service_title">Edge handle</string>
+    <string name="welcome_point_service_body">Once on, pull the drawer from the screen edge in any app. The first time you turn it on, Morg walks you through two required permissions.</string>
+    <string name="welcome_point_window_title">Open as</string>
+    <string name="welcome_point_window_body">Fullscreen by default. Turn it on to open new instances in a floating window you can see alongside the original.</string>
+    <string name="welcome_point_toolbar_title">Quick Settings</string>
+    <string name="welcome_point_toolbar_body">Put a “New window” button in the Control Center (swipe down twice → edit → drag it in). It works without the edge handle.</string>
+    <string name="welcome_start">Get started</string>
+
+    <!-- Window-mode guide (first time the switch is turned on) -->
+    <string name="window_guide_title">Open as: window</string>
+    <string name="window_guide_body">New instances open fullscreen by default. With this on, they open in a floating window while the original stays behind. Window mode needs system support, so confirm it once before turning it on.</string>
+    <string name="window_guide_status_label">Window support</string>
+    <string name="window_guide_status_unavailable">Not detected; Developer options needed</string>
+    <string name="window_guide_status_unconfirmed">Reported available, not tested yet</string>
+    <string name="window_guide_status_confirmed">Confirmed working</string>
+    <string name="window_guide_hint">“Try a window” opens a small window and closes it again. If it really comes up small, window mode works.</string>
+    <string name="window_guide_enable_anyway">Turn on anyway</string>
+    <string name="window_guide_enable">Turn on window mode</string>
+    <string name="window_guide_later">Keep fullscreen</string>
+
+    <!-- Toolbar guide (first time the switch is turned on) -->
 </resources>

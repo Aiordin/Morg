@@ -38,14 +38,12 @@ import androidx.core.view.doOnLayout
 /**
  * 小窗自检页。
  *
- * 引导里「小窗支持」这一步的确认方式：**真的打开一个小窗，再把它关掉**。
- * 只看开发者选项里的开关不够 —— 那个值打开、`windowingMode` 仍可能被 ROM 丢弃，
- * 用户选了小窗却得到全屏。
+ * 「打开方式」开关第一次打开时的确认方式：真的打开一个小窗，再把它关掉。
+ * 读开发者选项的开关不足以证明小窗可用。
  *
  * 流程：
  *
- * 1. [MainActivity] 把主界面退到后台，再以小窗模式启动本页（目标在前台时会被复用成全屏，
- *    所以必须先退后台）；
+ * 1. [MainActivity] 把主界面退到后台，再以小窗模式启动本页（目标在前台时会被复用成全屏）；
  * 2. 本页测量自己这扇窗口是否真的比屏幕小；
  * 3. 结果写盘（[WindowProbeStore]），显示给人看；
  * 4. 用户点「关闭小窗」或 2.6s 后自动关闭，回到主界面。
@@ -107,9 +105,8 @@ public class WindowProbeActivity : ComponentActivity() {
     private fun closeProbe() {
         if (isFinishing) return
         handler.removeCallbacksAndMessages(null)
-        // 主界面此刻在后台（调用方先 moveTaskToBack 才有了这次小窗）。
-        // 不能直接 startActivity(CLEAR_TOP)：同 affinity 的当前 task 就是这扇小窗，
-        // MainActivity 会被启动到小窗里（实测），用户看到主界面缩成小窗。
+        // 不能用 startActivity(CLEAR_TOP)：本页与 MainActivity 同 affinity，
+        // 主界面会被启动到当前小窗 task 里。所以按 taskId 把主 task 切回前台。
         val mainTaskId = intent.getIntExtra(EXTRA_MAIN_TASK_ID, -1)
         val moved = mainTaskId > 0 && runCatching {
             getSystemService(ActivityManager::class.java)
