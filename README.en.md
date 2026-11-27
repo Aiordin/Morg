@@ -2,7 +2,7 @@
 
 **Open another instance of the app you are using.**
 
-[简体中文](README.md) · [Source](https://github.com/Aiordin/morg) · [Download](../../releases/latest) · [MIT License](LICENSE)
+[简体中文](README.md) · [Download](../../releases/latest) · [MIT License](LICENSE)
 
 Morg is an Android multi-window tool that opens a new task for a running app.
 
