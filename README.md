@@ -2,7 +2,7 @@
 
 **为你正在用的应用再开一个实例。**
 
-[English](README.en.md) · [源码](https://github.com/Aiordin/morg) · [下载](../../releases/latest) · [MIT 许可](LICENSE)
+[English](README.en.md) · [下载](../../releases/latest) · [MIT 许可](LICENSE)
 
 Morg 是一个 Android 多开窗口工具，能够为正在运行的应用新开一个task.
 
