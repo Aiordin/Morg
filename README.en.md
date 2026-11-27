@@ -31,9 +31,10 @@ Morg is an Android multi-window tool that opens a new task for a running app.
 ## Install
 
 1. Download `Morg-*.apk` from [Releases](../../releases/latest), or build it yourself.
-2. Open the app and grant the two required permissions when prompted.
-3. Tap "Try a window" in setup to confirm the device's small-window support.
-4. Enable "Edge handle" and pull the drawer out from a screen edge.
+2. The first launch shows a welcome page explaining the three switches. Tap “Get started”.
+3. Turn on “Edge handle” and grant the two required permissions when prompted.
+4. “Open as” is fullscreen by default. Turn it on for window mode; the first time, Morg opens a real small window to confirm support.
+5. Once the service is running, you can turn on “Show toolbar” — a floating button at the bottom opens another instance in one tap.
 
 ## Build
 
@@ -51,9 +52,9 @@ app/src/main/kotlin/aiordin/morg/
 ├── MainActivity.kt            The only Activity: setup / settings
 ├── core/                      Settings, permissions, onboarding rules, build info
 ├── launch/                    Window modes, launch options, small-window probe
-├── overlay/                   Handle windows, geometry, foreground tracking, service
+├── overlay/                   Handle and toolbar windows, geometry, foreground tracking, service
 ├── qs/                        Quick Settings tile
-└── ui/                        Compose UI and theme
+└── ui/                        Compose UI, first-run guides and theme
 app/src/test/kotlin/aiordin/morg/   JVM unit tests
 gradle/libs.versions.toml       Central dependency versions
 flake.nix                       Development environment

@@ -10,6 +10,9 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * 应用入口，同时充当依赖容器。
@@ -22,6 +25,15 @@ public class MorgApp : Application(), LifecycleOwner, SavedStateRegistryOwner {
     public val settings: AppSettings by lazy { AppSettings(this) }
     public val tracker: ForegroundTracker by lazy { ForegroundTracker(this) }
     public val launcher: InstanceLauncher by lazy { InstanceLauncher(this) }
+
+    /**
+     * 不随任何组件销毁的应用级作用域。
+     *
+     * 控制中心磁贴点击后，TileService 会立刻被解绑，用服务自己的 scope 启动多开
+     * 会在动作完成前被取消。这个 scope 随进程存活 —— 进程退出时任务自然结束，
+     * 不需要保活，也不会留下后台运行的服务。
+     */
+    public val appScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val savedStateController = SavedStateRegistryController.create(this)

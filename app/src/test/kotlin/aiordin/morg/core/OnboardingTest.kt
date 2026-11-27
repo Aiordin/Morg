@@ -9,9 +9,9 @@ import org.junit.Test
  * 引导规则：
  *
  * 1. 浮窗与使用情况访问是必需项，通知可选；
- * 2. 小窗这一步以**自检成功**为完成条件，不看开发者选项里的开关；
- * 3. Android 13 以下没有通知权限，步骤列表里不能出现它；
- * 4. 完成过一次就不再引导（撤销权限也不重新弹）。
+ * 2. Android 13 以下没有通知权限，步骤列表里不能出现它；
+ * 3. 欢迎页只在首次进入显示；三段引导各自只在对应开关第一次打开时显示；
+ * 4. 跳过也算「看过」，不再重复弹。
  */
 class OnboardingTest {
 
@@ -22,27 +22,14 @@ class OnboardingTest {
     )
 
     @Test
-    fun `steps order starts with required permissions`() {
+    fun `service steps start with required permissions`() {
         assertEquals(
             listOf(
                 OnboardingStep.Overlay,
                 OnboardingStep.UsageAccess,
                 OnboardingStep.Notifications,
             ),
-            Onboarding.steps(notificationsAvailable = true, windowConfirmed = true),
-        )
-    }
-
-    @Test
-    fun `window step stays until the probe actually succeeds`() {
-        assertEquals(
-            listOf(
-                OnboardingStep.Overlay,
-                OnboardingStep.UsageAccess,
-                OnboardingStep.FreeformWindows,
-                OnboardingStep.Notifications,
-            ),
-            Onboarding.steps(notificationsAvailable = true, windowConfirmed = false),
+            Onboarding.steps(notificationsAvailable = true),
         )
     }
 
@@ -50,14 +37,20 @@ class OnboardingTest {
     fun `notifications step is dropped before android 13`() {
         assertEquals(
             listOf(OnboardingStep.Overlay, OnboardingStep.UsageAccess),
-            Onboarding.steps(notificationsAvailable = false, windowConfirmed = true),
+            Onboarding.steps(notificationsAvailable = false),
         )
     }
 
     @Test
-    fun `first launch shows onboarding`() {
-        assertTrue(Onboarding.shouldShow(completed = false))
-        assertFalse(Onboarding.shouldShow(completed = true))
+    fun `welcome shows only on first launch`() {
+        assertTrue(Onboarding.shouldShowWelcome(completed = false))
+        assertFalse(Onboarding.shouldShowWelcome(completed = true))
+    }
+
+    @Test
+    fun `each switch guide shows only until it is seen`() {
+        assertTrue(Onboarding.shouldShowGuide(seen = false))
+        assertFalse(Onboarding.shouldShowGuide(seen = true))
     }
 
     @Test
@@ -73,7 +66,7 @@ class OnboardingTest {
     }
 
     @Test
-    fun `window and notifications never block readiness`() {
+    fun `notifications never block readiness`() {
         assertTrue(
             Onboarding.isReady(
                 PermissionStatus(overlay = true, usageAccess = true, notifications = false),
@@ -105,11 +98,9 @@ class OnboardingTest {
     fun `satisfied reads each step from its own source`() {
         val onlyOverlay = PermissionStatus(overlay = true)
 
-        assertTrue(Onboarding.satisfied(OnboardingStep.Overlay, onlyOverlay, false))
-        assertFalse(Onboarding.satisfied(OnboardingStep.UsageAccess, onlyOverlay, false))
-        assertFalse(Onboarding.satisfied(OnboardingStep.Notifications, onlyOverlay, false))
-        // 小窗只看自检：授权齐全也不代表小窗能用。
-        assertFalse(Onboarding.satisfied(OnboardingStep.FreeformWindows, allGranted, false))
-        assertTrue(Onboarding.satisfied(OnboardingStep.FreeformWindows, PermissionStatus(), true))
+        assertTrue(Onboarding.satisfied(OnboardingStep.Overlay, onlyOverlay))
+        assertFalse(Onboarding.satisfied(OnboardingStep.UsageAccess, onlyOverlay))
+        assertFalse(Onboarding.satisfied(OnboardingStep.Notifications, onlyOverlay))
+        assertTrue(Onboarding.satisfied(OnboardingStep.Notifications, allGranted))
     }
 }

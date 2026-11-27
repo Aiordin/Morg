@@ -140,9 +140,8 @@ public class HandleService : Service() {
         /**
          * 服务此刻是否真的在跑。
          *
-         * 磁贴与界面用**它**（而不是设置里的开关值）决定显示状态 —— 否则
-         * 服务被系统清理后开关仍显示「开」，与实际不一致。
-         * 参考 2dust/v2rayNG 的做法：状态以真实运行为准。
+         * 磁贴与界面用它（而不是设置里的开关值）决定显示状态，避免服务被
+         * 系统清理后开关仍显示「开」。
          */
         @Volatile
         public var running: Boolean = false
