@@ -42,7 +42,7 @@ Requirements:
 
 - JDK 17
 - Android SDK: Platform 35, Build-Tools 35.0.0
-- The bundled Gradle wrapper (Gradle 9.3.1)
+- Gradle wrapper (Gradle 9.3.1)
 
 ## Project layout
 
