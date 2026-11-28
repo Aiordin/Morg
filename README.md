@@ -40,14 +40,14 @@ Morg 是一个 Android 多开窗口工具，能够为正在运行的应用新开
 
 - JDK 17
 - Android SDK：Platform 35、Build-Tools 35.0.0
-- 项目自带 Gradle Wrapper（Gradle 9.3.1）
+- Gradle Wrapper（Gradle 9.3.1）
 
 
 ## 项目结构
 
 ```
 app/src/main/kotlin/aiordin/morg/
-├── MorgApp.kt                 应用入口 + 手写依赖装配
+├── MorgApp.kt                 应用入口 + 依赖装配
 ├── MainActivity.kt            唯一 Activity：引导 / 设置页
 ├── core/                      设置、权限、引导规则、构建信息格式化
 ├── launch/                    窗口模式、启动参数、小窗自检
